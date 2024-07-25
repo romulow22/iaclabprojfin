@@ -7,7 +7,7 @@
 - E-mail: 1545593@sga.pucminas.br
 - Matricula: 212457
 
-## estrutura do projeto
+## Estrutura do projeto
 
 ```bash
 
