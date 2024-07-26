@@ -28,7 +28,7 @@ jobs:
   terraform:
     name: 'Terraform'
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.questio == 'apply' }}
+    if: ${{ github.event.inputs.question == 'apply' }}
 
     defaults:
       run:
