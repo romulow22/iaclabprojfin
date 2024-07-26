@@ -14,7 +14,7 @@ permissions:
   issues: read
   packages: none
   security-events: write
-  
+
 env:
  TF_LOG: INFO
 
@@ -90,6 +90,13 @@ jobs:
         ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         TF_VAR_vm_admin_password: ${{ secrets.TF_VAR_vm_admin_password }}
       run: terraform apply apply.tfplan
+
+    - name: Install Ansible
+      run: sudo apt-get update && sudo apt-get install -y ansible
+
+    - name: Run Ansible Playbook
+      run: ansible-playbook -i inventory playbook.yml
+      working-directory: ./ansible
 
   terraform-destroy:
     name: 'Terraform Destroy'
