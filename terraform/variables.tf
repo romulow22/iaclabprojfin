@@ -39,25 +39,3 @@ variable "vm_sku" {
   description = "SKU for the VM."
   type        = string
 }
-
-
-variable "tfstate_resourcegroup" {
-  description = "resource group name of tfstate storage."
-  type        = string
-}
-variable "tfstate_storage" {
-  description = "storage account name of tfstate container."
-  type        = string
-}
-variable "tfstate_container" {
-  description = "Blob container name of tfstate files."
-  type        = string
-}
-
-
-
-
-#variable "client_id" {}
-#variable "client_secret" {}
-#variable "subscription_id" {}
-#variable "tenant_id" {}

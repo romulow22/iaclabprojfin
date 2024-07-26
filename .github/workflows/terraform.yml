@@ -60,6 +60,7 @@ jobs:
         ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
         ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
         ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        TF_VAR_vm_admin_password: ${{ secrets.TF_VAR_vm_admin_password }}
       run: terraform plan -out apply.tfplan -var-file=student.tfvars
       continue-on-error: true
       
@@ -132,4 +133,5 @@ jobs:
         ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
         ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
         ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        TF_VAR_vm_admin_password: ${{ secrets.TF_VAR_vm_admin_password }}
       run: terraform apply apply.tfplan
