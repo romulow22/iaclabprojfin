@@ -64,70 +64,17 @@ jobs:
         ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         TF_VAR_vm_admin_password: ${{ secrets.TF_VAR_vm_admin_password }}
       run: terraform plan -out apply.tfplan -var-file=student.tfvars
-      continue-on-error: true
-      
-    - name: Add Plan Comment      
-      uses: actions/github-script@v6
-      id: comment
-      env:
-        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          // 1. Retrieve existing bot comments for the PR
-          const { data: comments } = await github.rest.issues.listComments({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
-          })
-          const botComment = comments.find(comment => {
-            return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Style')
-          })
-    
-          // 2. Prepare format of the comment
-          const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-          #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
-          <details><summary>Validation Output</summary>
-    
-          \`\`\`\n
-          ${{ steps.validate.outputs.stdout }}
-          \`\`\`
-    
-          </details>
-    
-          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
-    
-          <details><summary>Show Plan</summary>
-    
-          \`\`\`\n
-          ${process.env.PLAN}
-          \`\`\`
-    
-          </details>
-    
-          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
-    
-          // 3. If we have a comment, update it, otherwise create a new one
-          if (botComment) {
-            github.rest.issues.updateComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: botComment.id,
-              body: output
-            })
-          } else {
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
-          }
-    - name: Terraform Plan Status
-      if: steps.plan.outcome == 'failure'
-      run: exit 1
 
+    - name: Terraform Plan Verification
+      id: verify
+      run: |
+        echo "Verify the Terraform plan output above."
+        echo "If everything looks good, proceed with the apply step."
+        read -p "Do you want to apply the changes? (yes/no): " confirm
+        if [ "$confirm" != "yes" ]; then
+          echo "Terraform apply was cancelled."
+          exit 1
+        fi
     - name: Terraform Apply      
       id: apply
       env:
@@ -137,3 +84,60 @@ jobs:
         ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         TF_VAR_vm_admin_password: ${{ secrets.TF_VAR_vm_admin_password }}
       run: terraform apply apply.tfplan
+      
+  terraform-destroy:
+        name: 'Terraform Destroy'
+        runs-on: ubuntu-latest
+    
+        defaults:
+          run:
+            shell: bash   
+            working-directory: ./terraform     
+        steps:
+    
+        - name: Checkout
+          uses: actions/checkout@v4
+    
+        - name: Setup Terraform
+          uses: hashicorp/setup-terraform@v2
+          with:
+            terraform_version: 1.6.5
+            
+        - name: Terraform Init
+          id: init      
+          env:
+            ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+            ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+            ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+            ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          run: terraform init -upgrade
+    
+        - name: Terraform Destroy Plan
+          id: destroy-plan
+          env:
+            ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+            ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+            ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+            ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          run: terraform plan -destroy -out destroy.tfplan -var-file=student.tfvars
+    
+        - name: Terraform Destroy Verification
+          id: verify-destroy
+          run: |
+            echo "Verify the Terraform destroy plan output above."
+            echo "If everything looks good, proceed with the destroy step."
+            read -p "Do you want to destroy the resources? (yes/no): " confirm
+            if [ "$confirm" != "yes" ]; then
+              echo "Terraform destroy was cancelled."
+              exit 1
+            fi
+    
+        - name: Terraform Destroy
+          id: destroy
+          env:
+            ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+            ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+            ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+            ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+            TF_VAR_vm_admin_password: ${{ secrets.TF_VAR_vm_admin_password }}
+          run: terraform apply destroy.tfplan
