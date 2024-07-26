@@ -7,6 +7,7 @@ on:
 #    paths:
 #      - terraform/**
 #      - ansible/**
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -15,7 +16,6 @@ permissions:
   packages: none
 
 env:
- # verbosity setting for Terraform logs
  TF_LOG: INFO
 
 jobs:
@@ -52,7 +52,6 @@ jobs:
 
     - name: Terraform Validate
       id: validate      
-      if: success() || failure()
       run: terraform validate
     
     - name: Terraform Plan
@@ -65,16 +64,6 @@ jobs:
         TF_VAR_vm_admin_password: ${{ secrets.TF_VAR_vm_admin_password }}
       run: terraform plan -out apply.tfplan -var-file=student.tfvars
 
-    - name: Terraform Plan Verification
-      id: verify
-      run: |
-        echo "Verify the Terraform plan output above."
-        echo "If everything looks good, proceed with the apply step."
-        read -p "Do you want to apply the changes? (yes/no): " confirm
-        if [ "$confirm" != "yes" ]; then
-          echo "Terraform apply was cancelled."
-          exit 1
-        fi
     - name: Terraform Apply      
       id: apply
       env:
@@ -84,43 +73,3 @@ jobs:
         ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         TF_VAR_vm_admin_password: ${{ secrets.TF_VAR_vm_admin_password }}
       run: terraform apply apply.tfplan
-
-    - name: Proceed to Destroy
-      id: verify_destroy
-      run: |
-        echo "Proceed to destroy."
-        read -p "Do you want to proceed to destroy? (yes/no): " confirm
-        if [ "$confirm" != "yes" ]; then
-          echo "Terraform apply destroy was cancelled."
-          exit 1
-        fi      
-    
-    - name: Terraform Destroy Plan
-      id: destroy-plan
-      env:
-        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      run: terraform plan -destroy -out destroy.tfplan -var-file=student.tfvars
-    
-    - name: Terraform Destroy Verification
-      id: verify-destroy
-      run: |
-        echo "Verify the Terraform destroy plan output above."
-        echo "If everything looks good, proceed with the destroy step."
-        read -p "Do you want to destroy the resources? (yes/no): " confirm
-        if [ "$confirm" != "yes" ]; then
-          echo "Terraform destroy was cancelled."
-          exit 1
-        fi
-    
-    - name: Terraform Destroy
-      id: destroy
-      env:
-        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-        TF_VAR_vm_admin_password: ${{ secrets.TF_VAR_vm_admin_password }}
-      run: terraform apply destroy.tfplan
