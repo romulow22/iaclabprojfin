@@ -13,7 +13,8 @@ permissions:
   pull-requests: write 
   issues: read
   packages: none
-
+  security-events: write
+  
 env:
  TF_LOG: INFO
 
