@@ -1,7 +1,6 @@
 
 ############### Basic Values ###################
 vm_admin_username = "azureuser"
-vm_admin_password = "Projfin2024"
 
 ########### Basic Defitition Values ############
 project  = "student"

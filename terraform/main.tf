@@ -135,9 +135,9 @@ resource "azurerm_linux_virtual_machine" "my_vm" {
     version   = "latest"
   }
 
-  computer_name  = "${var.project}-vm"
-  admin_username = var.vm_admin_username
-  admin_password = var.vm_admin_password
+  computer_name                   = "${var.project}-vm"
+  admin_username                  = var.vm_admin_username
+  admin_password                  = var.vm_admin_password
   disable_password_authentication = false
 
   boot_diagnostics {

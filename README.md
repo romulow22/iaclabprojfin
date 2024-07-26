@@ -39,7 +39,7 @@ ansible-playbook -i inventory.ini playbook.yml
 
 ```bash
 cd ..
-terraform plan -destroy -out destroy.tfplan -var-file=acme.tfvars
+terraform plan -destroy -out destroy.tfplan -var-file=student.tfvars
 terraform apply destroy.tfplan
 ```
 
