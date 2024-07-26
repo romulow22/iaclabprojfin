@@ -8,6 +8,12 @@ on:
 #      - terraform/**
 #      - ansible/**
   workflow_dispatch:
+    inputs:
+      question:
+        description: 'Choose between 'apply'a and 'destroy'
+        required: true
+        default: 'apply'
+
 
 permissions:
   contents: write
@@ -22,6 +28,7 @@ jobs:
   terraform:
     name: 'Terraform'
     runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.questio == 'apply' }}
 
     defaults:
       run:
@@ -73,3 +80,52 @@ jobs:
         ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         TF_VAR_vm_admin_password: ${{ secrets.TF_VAR_vm_admin_password }}
       run: terraform apply apply.tfplan
+
+  terraform-destroy:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.questio == 'apply' }}
+    
+    defaults:
+      run:
+        shell: bash   
+        working-directory: ./terraform     
+    steps:
+    
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.6.5
+            
+    - name: Terraform Init
+      id: init      
+      env:
+        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      run: terraform init -upgrade
+    
+ 
+    - name: Terraform Plan Destroy 
+      id: plandestroy
+      env:
+        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        TF_VAR_vm_admin_password: ${{ secrets.TF_VAR_vm_admin_password }}
+      run: terraform plan -destroy -out destroy.tfplan -var-file=student.tfvars
+    
+    - name: Terraform Apply Destroy     
+      id: applydestroy
+      env:
+        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        TF_VAR_vm_admin_password: ${{ secrets.TF_VAR_vm_admin_password }}
+      run: terraform apply destroy.tfplan
