@@ -10,7 +10,22 @@
 ## Estrutura do projeto
 
 ```bash
+vagrant@iaclab2:/vagrant_data$ tree
+.
+├── ansible
+│   ├── inventory.tpl
+│   └── playbook.yml
+├── export-terraform-vars.sh
+├── README.md
+└── terraform
+    ├── backend.tf
+    ├── main.tf
+    ├── outputs.tf
+    ├── providers.tf
+    ├── student.tfvars
+    └── variables.tf
 
+2 directories, 10 files
 ```
 
 ## Exemplo de roteiro
@@ -21,26 +36,11 @@ Se faz necessario a criação de um storage account e um blob container na Azure
 
 As variáveis com o nome escolhido poderão ser configuradas no arquivo backend.tf
 
-### Provisionar infraestrutura
+### GitHub Actions
 
-```bash
-terraform init -upgrade
-terraform plan -out apply.tfplan -var-file=student.tfvars
-terraform apply apply.tfplan
-```
+Foram criados 2 jobs "Terraform Apply" e "Terraform Destroy"
 
-### Configurar serviços
-
-```bash
-ansible-playbook -i inventory.ini playbook.yml
-```
-
-### Destruir ambiente
-
-```bash
-cd ..
-terraform plan -destroy -out destroy.tfplan -var-file=student.tfvars
-terraform apply destroy.tfplan
-```
-
-## Evidências
+- Ir na aba Actions do GitHub
+- Selecionar a action Terraform
+- Clicar em Run workflow
+- Responder a pertunta com "apply" ou "destroy" para escolher o job a ser executado=
