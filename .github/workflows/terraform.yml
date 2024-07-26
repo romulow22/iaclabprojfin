@@ -1,19 +1,12 @@
 name: 'Terraform'
 
 on:
-#  push:
-#    branches: 
-#      - main
-#    paths:
-#      - terraform/**
-#      - ansible/**
   workflow_dispatch:
     inputs:
       question:
         description: 'Choose between apply and destroy'
         required: true
         default: 'apply'
-
 
 permissions:
   contents: write
@@ -72,7 +65,7 @@ jobs:
 
     - name: Upload SARIF file
       id: uploadcheckcov
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       if: success() || failure()
       with:
         sarif_file: results.sarif
