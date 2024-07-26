@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       question:
-        description: 'Choose between 'apply'a and 'destroy'
+        description: 'Choose between apply and destroy'
         required: true
         default: 'apply'
 
@@ -84,7 +84,7 @@ jobs:
   terraform-destroy:
     name: 'Terraform'
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.questio == 'apply' }}
+    if: ${{ github.event.inputs.question == 'destroy' }}
     
     defaults:
       run:
