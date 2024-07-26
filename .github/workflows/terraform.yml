@@ -1,9 +1,9 @@
 name: 'Terraform'
 
 on:
-  push:
-    branches: 
-      - main
+#  push:
+#    branches: 
+#      - main
 #    paths:
 #      - terraform/**
 #      - ansible/**
@@ -26,7 +26,7 @@ env:
 
 jobs:
   terraform:
-    name: 'Terraform'
+    name: 'Terraform Apply'
     runs-on: ubuntu-latest
     if: ${{ github.event.inputs.question == 'apply' }}
 
@@ -82,7 +82,7 @@ jobs:
       run: terraform apply apply.tfplan
 
   terraform-destroy:
-    name: 'Terraform'
+    name: 'Terraform Destroy'
     runs-on: ubuntu-latest
     if: ${{ github.event.inputs.question == 'destroy' }}
     
